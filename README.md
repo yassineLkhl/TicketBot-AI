@@ -59,4 +59,3 @@ docker-compose up -d db
 cd backend/classify-lambda
 npm install
 npm run start:dev
-emmanuelle.THOONSEN@celad.com. Appuyez sur Tabulation pour insérer.
