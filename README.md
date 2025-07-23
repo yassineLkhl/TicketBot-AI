@@ -1,8 +1,6 @@
 # TicketBot-AI
 This project is developed by a small team as both a production-grade SaaS initiative and a learning opportunity to master serverless infrastructure, modern cloud patterns, and LLM integration
 
-# TicketBot AI
-
 TicketBot AI is a SaaS platform designed to automate customer support ticket processing from platforms like Zendesk or Freshdesk, aimed at e-commerce businesses.
 
 The system retrieves incoming tickets, classifies them using a large language model (LLM), and either generates an automatic response or routes them to a human support agent depending on their category.
