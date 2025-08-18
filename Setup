@@ -1,0 +1,74 @@
+1. Nettoyer l’environnement
+
+Avant de relancer :
+
+docker-compose down -v
+
+
+⚠️ Vérifie aussi qu’aucun PostgreSQL local Windows ne tourne :
+
+netstat -ano | findstr :5432
+tasklist /FI "IMAGENAME eq postgres.exe"
+
+
+👉 Si tu vois postgres.exe côté Windows : désactive le service :
+
+sc config postgresql-x64-13 start= disabled
+sc config postgresql-x64-17 start= disabled
+net stop postgresql-x64-13
+net stop postgresql-x64-17
+
+2. Démarrer la base avec Docker
+docker-compose up -d
+
+
+Docker crée :
+
+User admin : postgres (password: devpass)
+
+DB par défaut : ticketbot_dev
+
+3. Configurer l’utilisateur applicatif
+
+Connecte-toi en admin :
+
+docker exec -it ticketbot-postgres psql -U postgres -d ticketbot_dev
+
+
+Puis crée ton user applicatif :
+
+DROP USER IF EXISTS ticketbot;
+CREATE USER ticketbot WITH PASSWORD 'devpass';
+GRANT ALL PRIVILEGES ON DATABASE ticketbot_dev TO ticketbot;
+GRANT ALL ON SCHEMA public TO ticketbot;
+
+
+Vérifie avec :
+
+\du
+
+4. Vérifier la connexion
+
+Depuis l’hôte :
+
+psql "postgresql://ticketbot:devpass@127.0.0.1:5432/ticketbot_dev"
+
+
+Tu dois entrer dans ticketbot_dev=#.
+
+5. Configurer Prisma
+
+Dans ton fichier .env :
+
+DATABASE_URL="postgresql://ticketbot:devpass@localhost:5432/ticketbot_dev?schema=public"
+
+
+Puis :
+
+npx prisma db push
+
+
+✅ Résultat attendu :
+
+Your database is now in sync with your Prisma schema.
+✔ Generated Prisma Client
