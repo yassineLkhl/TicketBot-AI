@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../api/node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @updatedAt
+
+  // Relations
+  categories Category[]
+  users      User[]
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  client_id   Int
+  name        String
+  description String?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @updatedAt
+
+  client  Client @relation(fields: [client_id], references: [id])
+  tickets CategoryOnTicket[]
+
+  @@index([client_id])
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  client_id     Int?
+  email         String    @unique
+  password_hash String
+  role          Role      @default(AGENT)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @updatedAt
+
+  client  Client?   @relation(fields: [client_id], references: [id])
+  tickets Ticket[]
+
+  @@index([client_id])
+}
+
+model Ticket {
+  id          Int            @id @default(autoincrement())
+  title       String         @db.VarChar(255)
+  description String?
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)   // 👈 anticipation classifier
+  source      TicketSource   @default(WEB)      // 👈 anticipation classifier
+  created_at  DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at  DateTime?      @updatedAt
+
+  // Relations
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+
+  categories CategoryOnTicket[]
+
+  @@index([user_id])
+}
+
+model CategoryOnTicket {
+  ticket_id   Int
+  category_id Int
+
+  // Métadonnées pour classifier
+  assigned_by String?  // "agent" | "classifier"
+  confidence  Float?   // niveau de confiance
+
+  ticket   Ticket   @relation(fields: [ticket_id], references: [id])
+  category Category @relation(fields: [category_id], references: [id])
+
+  @@id([ticket_id, category_id])
+}
+
+enum Role {
+  ADMIN
+  AGENT
+  USER
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketSource {
+  EMAIL
+  CHATBOT
+  WEB
+  API
+}
